@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Typing Arena — Fast Fingers Challenge</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A clean, fast typing speed game with high scores, stats, and background lo-fi.">
+  <meta name="keywords" content="typing test, typing game, wpm test, speed typing, practice typing">
+  <meta name="author" content="Typing Arena">
+  <!-- Favicon (replace with your own file when ready) -->
+  <!-- <link rel="icon" href="/favicon.ico"> -->
+
+  <!-- Analytics / ad network global script placeholder -->
+  <!-- Replace this with your real analytics/ad script from your provider -->
+  <script>
+    // Example placeholder for analytics / ad tracking.
+    // When you sign up for an ad or analytics platform,
+    // paste their official snippet here.
+    // Do not invent your own. Use the exact code they give you.
+  </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background: #020817;
+      color: #e5e5e5;
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      gap: 16px;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #38bdf8;
+    }
+
+    .tagline {
+      font-size: 13px;
+      color: #9ca3af;
+    }
+
+    .highscore {
+      text-align: right;
+      font-size: 13px;
+    }
+
+    .highscore-label {
+      color: #9ca3af;
+    }
+
+    .highscore-value {
+      font-size: 22px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: #22c55e;
+    }
+
+    .highscore-badge {
+      font-size: 10px;
+      color: #22c55e;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(260px, 1fr);
+      gap: 18px;
+      align-items: flex-start;
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, #111827, #020817);
+      border: 1px solid rgba(148, 163, 253, 0.16);
+      border-radius: 14px;
+      padding: 14px 14px 16px;
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.9);
+    }
+
+    .card-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: #9ca3af;
+      margin-bottom: 6px;
+    }
+
+    #targetText {
+      font-family: "SF Mono", Menlo, ui-monospace, monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #d1d5db;
+      white-space: pre-wrap;
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 18px;
+      margin: 10px 0 4px;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      min-width: 80px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 2px;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: #e5e5e5;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 8px 0 6px;
+    }
+
+    .btn {
+      font-size: 12px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 253, 0.35);
+      background: linear-gradient(to bottom right, #111827, #020817);
+      color: #e5e5e5;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.9);
+      border-color: #38bdf8;
+      color: #38bdf8;
+    }
+
+    .btn.secondary {
+      border-color: rgba(75, 85, 99, 0.9);
+      color: #9ca3af;
+    }
+
+    .btn.secondary:hover {
+      color: #e5e5e5;
+      border-color: #6b7280;
+    }
+
+    #typingInput {
+      width: 100%;
+      margin-top: 4px;
+      padding: 8px 9px;
+      min-height: 120px;
+      max-height: 220px;
+      resize: vertical;
+      border-radius: 10px;
+      border: 1px solid rgba(75, 85, 99, 0.9);
+      background: rgba(9, 9, 11, 0.96);
+      color: #e5e5e5;
+      font-family: "SF Mono", Menlo, ui-monospace, monospace;
+      font-size: 14px;
+      outline: none;
+      line-height: 1.5;
+    }
+
+    #typingInput:disabled {
+      background: rgba(15, 23, 42, 0.9);
+      color: #6b7280;
+      cursor: not-allowed;
+    }
+
+    .hint {
+      font-size: 10px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+
+    .ad-slot {
+      margin-bottom: 10px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px dashed rgba(148, 163, 253, 0.35);
+      background: radial-gradient(circle at top, rgba(56, 189, 248, 0.10), transparent);
+      font-size: 10px;
+      color: #9ca3af;
+      text-align: center;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sidebar-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: #9ca3af;
+      margin-bottom: 6px;
+    }
+
+    .sidebar-text {
+      font-size: 11px;
+      color: #9ca3af;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+
+    .music-toggle {
+      font-size: 10px;
+      color: #9ca3af;
+      margin-top: 6px;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      display: inline-block;
+    }
+
+    @media (max-width: 800px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div>
+      <div class="logo">Typing Arena</div>
+      <div class="tagline">Fast WPM. Real stats. Background lo-fi. Ad-ready.</div>
+    </div>
+    <div class="highscore">
+      <div class="highscore-label">Best WPM</div>
+      <div class="highscore-value" id="bestWpmDisplay">0.0</div>
+      <div class="highscore-badge" id="newHighBadge" style="display:none;">New personal record</div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- Main game card -->
+    <div class="card">
+      <div class="card-title">Target text</div>
+      <div id="targetText"></div>
+
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-label">Time</div>
+          <div class="stat-value" id="timeDisplay">00:00</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Words</div>
+          <div class="stat-value" id="wordsDisplay">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">WPM</div>
+          <div class="stat-value" id="wpmDisplay">0.0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Accuracy</div>
+          <div class="stat-value" id="accuracyDisplay">0.0%</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="btn" id="startBtn">Start</button>
+        <button class="btn secondary" id="endBtn">End test</button>
+        <button class="btn secondary" id="resetBtn">Reset</button>
+        <button class="btn secondary" id="newParagraphBtn">New paragraph</button>
+      </div>
+
+      <textarea id="typingInput" placeholder="Press Start, then type exactly what you see above." disabled></textarea>
+      <div class="hint">Scores count more when accuracy is high. Default flex threshold is 80%+.</div>
+
+      <div class="music-toggle" id="musicToggle">Click once anywhere to start lo-fi. Click here to mute/unmute.</div>
+    </div>
+
+    <!-- Sidebar / ads / info -->
+    <div>
+      <div class="card" style="margin-bottom:10px;">
+        <div class="sidebar-title">Ad space</div>
+
+        <!-- Top banner ad slot -->
+        <div class="ad-slot" id="adTop">
+          <!-- Paste your ad network's top banner code here -->
+          Top banner placement (leaderboard / responsive).
+        </div>
+
+        <!-- Sidebar box ad slot -->
+        <div class="ad-slot" id="adSide">
+          <!-- Paste your ad network's sidebar box code here -->
+          Sidebar box placement (medium rectangle / responsive).
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="sidebar-title">About this game</div>
+        <div class="sidebar-text">
+          Typing Arena gives you randomized text from a curated pool so you cannot just
+          memorize one sentence and cheat your way to fake glory.
+        </div>
+        <div class="sidebar-text">
+          Your best WPM is saved in the browser, so every visit is another chance to beat
+          your own record, not someone else's bots.
+        </div>
+        <div class="sidebar-text">
+          Ad slots are wired and ready. When you join an ad platform, drop their official script
+          into the marked sections above. Keep layouts clean if you want people to stay.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Background lo-fi audio -->
+<!-- Place a file named "lofi.mp3" in the same folder as this index.html -->
+<audio id="bgMusic" src="lofi.mp3" loop></audio>
+
+<script>
+  // Paragraph pool
+  const paragraphs = [
+    "The morning light slipped through the blinds and painted quiet stripes across the keyboard. It felt like a small reminder to move, to build, to stop scrolling and start doing something that actually mattered.",
+    "Each choice you make is a brick in a path that leads somewhere specific. You do not drift into strength, discipline, or independence. You build it on purpose, usually while nobody is watching.",
+    "The room hummed with the sound of a tired fan and a determined mind. Progress did not arrive with fireworks. It showed up as one more rep, one more page, one more small thing done correctly.",
+    "Most people underestimate how much they can do in a year and overestimate what they can do in a day. Consistent, slightly uncomfortable effort will embarrass your old self in the best way possible.",
+    "There is a strange kind of peace in focusing on one task with full attention. No notifications, no noise, just you against the thing in front of you, finding out what your actual limits are.",
+    "The city hummed with low engines and distant chatter. Somewhere above, a plane carved a white line across a blue sky that no one looked at for more than a second.",
+    "He stared at the blinking cursor like it was judging him. Maybe it was. Every backspace felt like another tiny confession of uncertainty.",
+    "The coffee tasted burnt, but he kept drinking it. It was not about taste anymore, it was about staying awake long enough to feel accomplished.",
+    "She tied her shoes, not because she was going anywhere important, but because she liked the quiet ritual of being ready for something.",
+    "Sometimes progress looks like nothing. Just another Tuesday where you did not quit.",
+    "The screen glowed softly in the dark room. It made everything else feel temporary, like the real world only existed in pixels.",
+    "He kept a notebook full of half ideas and bad handwriting. It was chaos, but it was his chaos.",
+    "There was comfort in repetition, the same song, the same road, the same sunrise through the same dusty windshield.",
+    "Discipline is not loud. It does not announce itself. It just quietly wins.",
+    "She laughed at something that was not even funny, just because laughing felt better than thinking.",
+    "The best kind of tired is the one that comes after doing something you did not want to do, but needed to.",
+    "He wondered how many people were awake at 2 a.m. doing the same thing, pretending they were not procrastinating.",
+    "It is strange how silence can be louder than any noise when you are thinking too much.",
+    "Every undone task waited like a ghost, whispering reminders that he was not finished yet.",
+    "He deleted the same sentence four times before realizing it was fine the first way.",
+    "A small breeze slipped through the cracked window, carrying the smell of rain and distant asphalt.",
+    "The more he tried to relax, the more tense he became, like trying to sleep before an early flight.",
+    "Sometimes the hardest part of starting is convincing yourself that the beginning even matters.",
+    "She did not trust motivation anymore. It always showed up late and left early.",
+    "He liked people who were not afraid of silence. Most could not stand it for long.",
+    "The sound of typing filled the room, uneven, impatient, human.",
+    "He thought of all the things he would fix tomorrow, a word that had stopped meaning anything a long time ago.",
+    "She did not chase peace anymore. She just stopped feeding chaos.",
+    "He realized too late that most opportunities do not knock, they whisper.",
+    "Every morning started the same way: promise, coffee, distraction, guilt, repeat.",
+    "The list of goals kept growing faster than his ability to complete them.",
+    "He missed when days felt long, before every hour started fighting for his attention.",
+    "The internet was full of people pretending to be fine. Some were even good at it.",
+    "She wanted less noise, not less life.",
+    "The longer he stared at the clock, the slower it moved, like it was mocking him.",
+    "It is funny how inspiration only shows up when you stop chasing it.",
+    "The floor creaked, the fridge hummed, and the world kept spinning like nothing was urgent.",
+    "He looked out the window, not for answers, but for proof the world was still there.",
+    "She deleted messages she never planned to send, just to feel in control of something.",
+    "He used to care about being understood. Now he just wanted to be left in peace.",
+    "The most dangerous habit is waiting until you feel ready.",
+    "She started reading again, not for knowledge, but to remember what silence felt like.",
+    "He caught himself scrolling past his own life to look at strangers living theirs.",
+    "Not every day has to mean something. Some days just get you to the next one.",
+    "He did not mind being alone, he just hated explaining why.",
+    "She wrote lists for everything: goals, groceries, reasons to keep going.",
+    "He did not need more time, he needed fewer distractions.",
+    "Everyone is waiting for a big moment. Most of life happens between them.",
+    "The glow of the monitor replaced the warmth of the sun long ago.",
+    "He did not realize he had grown stronger until something hard felt easy.",
+    "She was not chasing happiness anymore, just clarity.",
+    "It was easier to start over than to finish what he had begun.",
+    "Sometimes he worked just to avoid thinking about why he was working.",
+    "She smiled at the chaos, because fighting it only made it louder.",
+    "The best kind of growth is the kind no one notices until it is obvious."
+  ];
+
+  let pool = [];
+  let currentText = "";
+  let isRunning = false;
+  let startTime = null;
+  let timerId = null;
+
+  let highWPM = parseFloat(localStorage.getItem("typingArenaHighWPM") || "0");
+
+  const targetTextEl = document.getElementById("targetText");
+  const typingInput = document.getElementById("typingInput");
+  const timeDisplay = document.getElementById("timeDisplay");
+  const wordsDisplay = document.getElementById("wordsDisplay");
+  const wpmDisplay = document.getElementById("wpmDisplay");
+  const accuracyDisplay = document.getElementById("accuracyDisplay");
+  const bestWpmDisplay = document.getElementById("bestWpmDisplay");
+  const newHighBadge = document.getElementById("newHighBadge");
+
+  const startBtn = document.getElementById("startBtn");
+  const endBtn = document.getElementById("endBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const newParagraphBtn = document.getElementById("newParagraphBtn");
+
+  const bgMusic = document.getElementById("bgMusic");
+  const musicToggle = document.getElementById("musicToggle");
+  let musicEnabled = false;
+
+  bestWpmDisplay.textContent = highWPM.toFixed(1);
+
+  function refillPool() {
+    pool = [...paragraphs];
+  }
+
+  function pickParagraph() {
+    if (pool.length === 0) refillPool();
+    const index = Math.floor(Math.random() * pool.length);
+    const text = pool[index];
+    pool.splice(index, 1);
+    currentText = text;
+    targetTextEl.textContent = text;
+  }
+
+  function formatTime(totalSeconds) {
+    const m = Math.floor(totalSeconds / 60);
+    const s = Math.floor(totalSeconds % 60);
+    return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+  }
+
+  function updateStats() {
+    if (!startTime) return;
+
+    const now = performance.now();
+    const elapsed = (now - startTime) / 1000;
+
+    const typed = typingInput.value;
+    const words = typed.trim().length > 0
+      ? typed.trim().split(/\s+/).length
+      : 0;
+
+    const targetChars = currentText.split("");
+    const typedChars = typed.split("");
+    let correct = 0;
+    const maxCount = Math.min(targetChars.length, typedChars.length);
+    for (let i = 0; i < maxCount; i++) {
+      if (typedChars[i] === targetChars[i]) correct++;
+    }
+    const accuracy = targetChars.length
+      ? Math.max(0, Math.min(100, (correct / targetChars.length) * 100))
+      : 0;
+
+    const wpm = elapsed > 0
+      ? (words / (elapsed / 60))
+      : 0;
+
+    timeDisplay.textContent = formatTime(elapsed);
+    wordsDisplay.textContent = String(words);
+    wpmDisplay.textContent = wpm.toFixed(1);
+    accuracyDisplay.textContent = accuracy.toFixed(1) + "%";
+
+    // Only update high score if accuracy is decent
+    if (wpm > highWPM && accuracy >= 80) {
+      highWPM = wpm;
+      localStorage.setItem("typingArenaHighWPM", String(highWPM));
+      bestWpmDisplay.textContent = highWPM.toFixed(1);
+      newHighBadge.style.display = "block";
+    }
+  }
+
+  function startTest() {
+    if (!currentText) pickParagraph();
+    typingInput.value = "";
+    typingInput.disabled = false;
+    typingInput.focus();
+    newHighBadge.style.display = "none";
+
+    isRunning = true;
+    startTime = performance.now();
+
+    if (timerId) clearInterval(timerId);
+    timerId = setInterval(updateStats, 100);
+  }
+
+  function endTest() {
+    if (!isRunning) return;
+    isRunning = false;
+    if (timerId) clearInterval(timerId);
+    updateStats();
+    typingInput.disabled = true;
+  }
+
+  function resetTest() {
+    isRunning = false;
+    if (timerId) clearInterval(timerId);
+    typingInput.value = "";
+    typingInput.disabled = true;
+    startTime = null;
+    timeDisplay.textContent = "00:00";
+    wordsDisplay.textContent = "0";
+    wpmDisplay.textContent = "0.0";
+    accuracyDisplay.textContent = "0.0%";
+    newHighBadge.style.display = "none";
+  }
+
+  function newParagraph() {
+    resetTest();
+    pickParagraph();
+  }
+
+  // Music control: starts on first interaction, toggle via label
+  function tryStartMusic() {
+    if (!bgMusic) return;
+    if (!musicEnabled) {
+      bgMusic.volume = 0.3;
+      bgMusic.play().catch(() => {});
+      musicEnabled = true;
+    }
+  }
+
+  document.addEventListener("click", () => {
+    tryStartMusic();
+  }, { once: true });
+
+  if (musicToggle) {
+    musicToggle.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (!bgMusic) return;
+      if (bgMusic.paused) {
+        bgMusic.volume = 0.3;
+        bgMusic.play().catch(() => {});
+        musicEnabled = true;
+        musicToggle.textContent = "Lo-fi playing. Click to mute.";
+      } else {
+        bgMusic.pause();
+        musicEnabled = false;
+        musicToggle.textContent = "Lo-fi muted. Click to play.";
+      }
+    });
+  }
+
+  typingInput.addEventListener("input", () => {
+    if (!isRunning) return;
+    updateStats();
+  });
+
+  startBtn.addEventListener("click", startTest);
+  endBtn.addEventListener("click", endTest);
+  resetBtn.addEventListener("click", resetTest);
+  newParagraphBtn.addEventListener("click", newParagraph);
+
+  // Initial setup
+  refillPool();
+  pickParagraph();
+  resetTest();
+</script>
+</body>
+</html>
