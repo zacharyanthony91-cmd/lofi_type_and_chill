@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ChillType - Lo-Fi Typing Game</title>
+<style>
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:'Courier New',monospace;
+    background:linear-gradient(160deg,#2a2440,#17182a);
+    color:#e0dff1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
+  }
+  h1{
+    font-size:2rem;
+    color:#c5b2ff;
+    text-shadow:0 0 12px #8c5cff;
+    margin-bottom:20px;
+  }
+  #game-box{
+    width:80%;
+    max-width:800px;
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.15);
+    border-radius:14px;
+    padding:20px;
+    box-shadow:0 0 30px rgba(100,60,200,0.2);
+    backdrop-filter:blur(10px);
+  }
+  #text-display{
+    min-height:120px;
+    line-height:1.5;
+    font-size:1.1rem;
+    margin-bottom:20px;
+    color:#e8e6ff;
+  }
+  #input-area{
+    width:100%;
+    font-size:1rem;
+    padding:12px;
+    border-radius:8px;
+    border:none;
+    outline:none;
+    background:rgba(255,255,255,0.08);
+    color:#fff;
+  }
+  #stats{
+    margin-top:15px;
+    font-size:0.9rem;
+    color:#a6a2ff;
+    display:flex;
+    justify-content:space-between;
+  }
+  .correct{color:#8ef3b3}
+  .incorrect{color:#ff7b7b;text-decoration:underline}
+</style>
+</head>
+<body>
+<audio id="lofi-audio" autoplay loop>
+  <source src="lofi.mp3" type="audio/mpeg">
+</audio>
+
+<h1>ChillType</h1>
+<div id="game-box">
+  <div id="text-display"></div>
+  <textarea id="input-area" rows="3" placeholder="Type here to start..."></textarea>
+  <div id="stats">
+    <span id="wpm">WPM: 0</span>
+    <span id="highscore">High Score: 0</span>
+  </div>
+</div>
+
+<script>
+// audio autoplay fallback
+const audio=document.getElementById('lofi-audio');
+document.addEventListener('DOMContentLoaded',()=>{
+  audio.volume=0.4;
+  audio.play().catch(()=>{
+    document.body.addEventListener('click',()=>audio.play(),{once:true});
+  });
+});
+
+const funParagraphs=[
+"No cap, I just typed this whole thing like it owed me rent money. The keyboard’s hot, the lo-fi is smooth, and my focus is holding on by a single thread of caffeine. If motivation had a volume knob, I’d finally turn it up.",
+"I swear every lo-fi playlist thumbnail looks like someone who journals at 3am. The rain outside helps me pretend I’m productive, even though I’ve just been staring at the same paragraph for ten minutes. At least the vibes are undefeated.",
+"Bro said 'touch grass' but I’m too deep in the glow of my monitor. My plants are dying but my WPM is thriving. Priorities, I guess.",
+"My attention span just rage quit but my fingers kept typing. I’m convinced typing fast tricks my brain into thinking I’m achieving something. Works every time until I realize it’s just practice text.",
+"This song makes me feel like I’m in a movie about finally getting my life together. Spoiler alert: I’m not, but the font looks good. Progress is an illusion and I’m fine with it.",
+"I type like I’m trying to outrun my student loans. The only thing faster than my fingers is my declining attention to reality. At least I look focused.",
+"This coffee has achieved sentience and is now my therapist. It listens, it warms, it doesn’t judge. 10/10 life partner.",
+"Whoever invented lo-fi beats deserves a Nobel Peace Prize. My brain is chaos, but somehow these dusty drum loops make it feel poetic. It’s giving existential productivity.",
+"Typing this paragraph like it’s an apology letter to my future self. Maybe he’ll forgive me for wasting half the day scrolling memes. But at least I spelled everything right this time.",
+"I love how typing fast feels like winning an argument no one’s having. The rhythm slaps, my confidence spikes, and then autocorrect humbles me instantly.",
+"The lo-fi crackle in the background is just my brain trying to reboot. Every beat feels like a reminder that it’s okay to slow down. Except my typing speed—never slow that down.",
+"Manifesting chill energy but my anxiety’s still doing jumping jacks. The duality of man is wild. One hand types calm thoughts, the other eats chips aggressively.",
+"My desk looks like a warzone between ambition and crumbs. But this lighting? Cinematic. I’m the main character in a productivity montage that ends in a nap.",
+"Sometimes I forget I’m supposed to be working and just start vibing. The beat loops, the text flows, and suddenly it’s dark outside. Time travel is real; it’s called deep focus.",
+"I type like a hacker but all I’m doing is fixing typos. It’s okay though—every movie hacker starts somewhere. I just need the dramatic lighting and faster Wi-Fi.",
+"If vibes were currency, I’d be rich but still broke. Every lo-fi beat feels like emotional tax evasion. At least it’s a legal high.",
+"I’m convinced productivity is just a series of confident mistakes. You write, you delete, you nod like you understand yourself. Then you open another tab and start over.",
+"The lo-fi girl been studying since 2018. She’s probably got six PhDs by now. I can’t even commit to a grocery list.",
+"Typing in the dark makes me feel mysterious until I hit the wrong key. Then I’m just a confused raccoon staring at glowing letters. Still kind of a vibe though.",
+"My focus bar loads slower than Windows XP. But once it’s up, I’m unstoppable for a whole seven minutes. Then I need a snack break.",
+"Why does every playlist title sound like a therapy session? ‘Lo-fi to heal your inner child’? Bro, I just need to meet my deadline. Calm down, Spotify.",
+"I can’t tell if I’m improving or just vibing more efficiently. Either way, this font makes me feel like a genius. Small victories.",
+"The best part of typing games is pretending speed equals intelligence. I’m basically the Flash, but for grammar errors. My superpower is caffeine tolerance.",
+"This beat hits different when your life’s slightly falling apart but you’re chill about it. Like yeah, bills exist, but so does this snare. Balance.",
+"Every lo-fi track sounds like it’s about to give me advice I’ll ignore. Still, I listen because the piano said something my therapist didn’t. Growth is complicated.",
+"Typing fast feels like I’m cheating the Matrix. Somewhere, code is watching me backspace in slow motion. Keanu would be proud.",
+"Why does every tab on my computer feel like a side quest? I opened one to study, now I’m here learning HTML. The internet is chaos disguised as opportunity.",
+"If vibes could pay rent, I’d own property on serenity street. Sadly, all I’ve got is this high score and a half-eaten granola bar. Close enough.",
+"Lowkey, I type faster when no one’s watching. The pressure of imaginary competition is elite motivation. Someone give me an invisible audience permanently.",
+"Sometimes I type random words just to hear the rhythm. It’s like drum practice for introverts. My neighbors probably think I’m coding world peace.",
+"My WPM isn’t fast, it’s emotionally expressive. Every typo tells a story of distraction and determination. I’m an artist, not a typist.",
+"The cursor blinks like it’s judging me. Relax, little line, I’m doing my best. Let me vibe in peace.",
+"Typing this with lo-fi rain in the background feels spiritual. Like the universe wants me to finish this paragraph before midnight. Spoiler: I won’t.",
+"Why does every keyboard sound different when you’re feeling dramatic? Today it’s giving ‘main character energy in lowercase’. Tomorrow it’ll sound like taxes.",
+"The beat drops, my brain reboots, and suddenly I’m productive again. Science can’t explain it, but lo-fi can. It’s practically therapy with reverb.",
+"I wonder if the lo-fi girl ever finishes her homework. Maybe she’s trapped in a loop like me, endlessly typing for vibes. Relatable queen.",
+"Every keystroke is a tiny victory against procrastination. I may lose battles, but I win the soundtrack. War never sounded this chill.",
+"My to-do list just evolved into a novel. Plot twist: I’m still on chapter one. Maybe next beat I’ll finish it.",
+"Typing feels better when it’s pointless. Like, who needs context when the rhythm’s right? Productivity is temporary, vibes are forever.",
+"Bro, if motivation had an app, it’d still need an update. For now, lo-fi is the patch keeping my sanity from crashing. Version 1.0: vibes only.",
+"I treat my keyboard like an instrument and my deadlines like background noise. It’s called balance, or delusion. Depends on the day.",
+"Typing to lo-fi feels like meditation but louder. My thoughts sync with the drums, my doubts fade with the bass. Inner peace achieved—temporarily.",
+"Every typo is a cry for help and a creative choice. Depends on how confident you look while making it. Fake it till autocorrect gets tired.",
+"My focus playlist says ‘deep work,’ but I’m just deep in snacks. Still, typing feels like progress. Denial never sounded so chill.",
+"If overthinking had a soundtrack, it’d be this. Every thought replays with a different beat until I convince myself it’s progress. Maybe it is.",
+"The caffeine hit different today. I typed a whole paragraph before realizing it made no sense. Efficiency over logic, baby.",
+"The lo-fi girl’s cat probably has its own spin-off by now. I’d watch that before finishing my tasks. Priorities, but make it aesthetic.",
+"I type like I’m trying to prove a point to no one. That’s self-expression, right? Art through clack.",
+"Every spacebar press is an emotional reset. I start sentences like I start goals—enthusiastically, then unsure halfway through. It’s fine; the beat forgives me."
+];
+
+let paragraph="";
+const textDisplay=document.getElementById('text-display');
+const inputArea=document.getElementById('input-area');
+const wpmDisplay=document.getElementById('wpm');
+const highScoreDisplay=document.getElementById('highscore');
+
+let startTime,timerStarted=false;
+let highScore=localStorage.getItem('chilltype_highscore')||0;
+highScoreDisplay.textContent="High Score: "+highScore;
+
+function setNewParagraph(){
+  paragraph=funParagraphs[Math.floor(Math.random()*funParagraphs.length)];
+  textDisplay.innerHTML=paragraph.split('').map(c=>`<span>${c}</span>`).join('');
+  inputArea.value="";
+  timerStarted=false;
+}
+setNewParagraph();
+
+inputArea.addEventListener('input',()=>{
+  const arrayText=textDisplay.querySelectorAll('span');
+  const arrayValue=inputArea.value.split('');
+  let correctCount=0;
+  if(!timerStarted){startTime=new Date();timerStarted=true;}
+
+  arrayText.forEach((charSpan,index)=>{
+    const char=arrayValue[index];
+    if(char==null){charSpan.classList.remove('correct','incorrect');}
+    else if(char===charSpan.innerText){
+      charSpan.classList.add('correct');charSpan.classList.remove('incorrect');correctCount++;
+    }else{
+      charSpan.classList.add('incorrect');charSpan.classList.remove('correct');
+    }
+  });
+
+  if(arrayValue.length===paragraph.length){
+    const endTime=new Date();
+    const timeTaken=(endTime-startTime)/1000/60;
+    const words=paragraph.split(' ').length;
+    const wpm=Math.round(words/timeTaken);
+    wpmDisplay.textContent="WPM: "+wpm;
+    if(wpm>highScore){
+      highScore=wpm;
+      localStorage.setItem('chilltype_highscore',highScore);
+      highScoreDisplay.textContent="High Score: "+highScore;
+    }
+    setTimeout(setNewParagraph,1000);
+  }
+});
+</script>
+</body>
+</html>
