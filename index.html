@@ -2,8 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Typing Arena</title>
+  <title>Typing Arena — Fast Fingers Challenge</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A clean, fast typing speed game with high scores, stats, and background lo-fi.">
+  <meta name="keywords" content="typing test, typing game, wpm test, speed typing, practice typing">
+  <meta name="author" content="Typing Arena">
+  <!-- Favicon (replace with your own file when ready) -->
+  <!-- <link rel="icon" href="/favicon.ico"> -->
+
+  <!-- Analytics / ad network global script placeholder -->
+  <!-- Replace this with your real analytics/ad script from your provider -->
+  <script>
+    // Example placeholder for analytics / ad tracking.
+    // When you sign up for an ad or analytics platform,
+    // paste their official snippet here.
+    // Do not invent your own. Use the exact code they give you.
+  </script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -13,7 +28,7 @@
     }
 
     body {
-      background: #050816;
+      background: #020817;
       color: #e5e5e5;
       display: flex;
       justify-content: center;
@@ -76,10 +91,10 @@
 
     .card {
       background: radial-gradient(circle at top left, #111827, #020817);
-      border: 1px solid rgba(148, 163, 253, 0.15);
+      border: 1px solid rgba(148, 163, 253, 0.16);
       border-radius: 14px;
       padding: 14px 14px 16px;
-      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.75);
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.9);
     }
 
     .card-title {
@@ -144,7 +159,7 @@
 
     .btn:hover {
       transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.8);
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.9);
       border-color: #38bdf8;
       color: #38bdf8;
     }
@@ -197,6 +212,10 @@
       font-size: 10px;
       color: #9ca3af;
       text-align: center;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .sidebar-title {
@@ -214,6 +233,16 @@
       margin-bottom: 8px;
     }
 
+    .music-toggle {
+      font-size: 10px;
+      color: #9ca3af;
+      margin-top: 6px;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      display: inline-block;
+    }
+
     @media (max-width: 800px) {
       .layout {
         grid-template-columns: 1fr;
@@ -226,7 +255,7 @@
   <header>
     <div>
       <div class="logo">Typing Arena</div>
-      <div class="tagline">Race your fingers. Track your best. Ads pay the rent.</div>
+      <div class="tagline">Fast WPM. Real stats. Background lo-fi. Ad-ready.</div>
     </div>
     <div class="highscore">
       <div class="highscore-label">Best WPM</div>
@@ -268,33 +297,54 @@
       </div>
 
       <textarea id="typingInput" placeholder="Press Start, then type exactly what you see above." disabled></textarea>
-      <div class="hint">Tip: Only WPM with decent accuracy are worth flexing.</div>
+      <div class="hint">Scores count more when accuracy is high. Default flex threshold is 80%+.</div>
+
+      <div class="music-toggle" id="musicToggle">Click once anywhere to start lo-fi. Click here to mute/unmute.</div>
     </div>
 
-    <!-- Sidebar / ad area -->
+    <!-- Sidebar / ads / info -->
     <div>
       <div class="card" style="margin-bottom:10px;">
         <div class="sidebar-title">Ad space</div>
-        <div class="ad-slot" id="adTop">Leaderboard 728x90 or responsive banner</div>
-        <div class="ad-slot" id="adSide">Sidebar 300x250 premium slot</div>
+
+        <!-- Top banner ad slot -->
+        <div class="ad-slot" id="adTop">
+          <!-- Paste your ad network's top banner code here -->
+          Top banner placement (leaderboard / responsive).
+        </div>
+
+        <!-- Sidebar box ad slot -->
+        <div class="ad-slot" id="adSide">
+          <!-- Paste your ad network's sidebar box code here -->
+          Sidebar box placement (medium rectangle / responsive).
+        </div>
       </div>
 
       <div class="card">
         <div class="sidebar-title">About this game</div>
         <div class="sidebar-text">
-          Text is pulled from a rotating pool so you cannot just memorize one sentence
-          and pretend you are fast. High scores are stored in your browser.
+          Typing Arena gives you randomized text from a curated pool so you cannot just
+          memorize one sentence and cheat your way to fake glory.
         </div>
         <div class="sidebar-text">
-          When you are ready to monetize, paste your ad network script into the ad slots above.
-          Bring traffic first, talk money second.
+          Your best WPM is saved in the browser, so every visit is another chance to beat
+          your own record, not someone else's bots.
+        </div>
+        <div class="sidebar-text">
+          Ad slots are wired and ready. When you join an ad platform, drop their official script
+          into the marked sections above. Keep layouts clean if you want people to stay.
         </div>
       </div>
     </div>
   </div>
 </div>
 
+<!-- Background lo-fi audio -->
+<!-- Place a file named "lofi.mp3" in the same folder as this index.html -->
+<audio id="bgMusic" src="lofi.mp3" loop></audio>
+
 <script>
+  // Paragraph pool
   const paragraphs = [
     "The morning light slipped through the blinds and painted quiet stripes across the keyboard. It felt like a small reminder to move, to build, to stop scrolling and start doing something that actually mattered.",
     "Each choice you make is a brick in a path that leads somewhere specific. You do not drift into strength, discipline, or independence. You build it on purpose, usually while nobody is watching.",
@@ -358,6 +408,7 @@
   let isRunning = false;
   let startTime = null;
   let timerId = null;
+
   let highWPM = parseFloat(localStorage.getItem("typingArenaHighWPM") || "0");
 
   const targetTextEl = document.getElementById("targetText");
@@ -373,6 +424,10 @@
   const endBtn = document.getElementById("endBtn");
   const resetBtn = document.getElementById("resetBtn");
   const newParagraphBtn = document.getElementById("newParagraphBtn");
+
+  const bgMusic = document.getElementById("bgMusic");
+  const musicToggle = document.getElementById("musicToggle");
+  let musicEnabled = false;
 
   bestWpmDisplay.textContent = highWPM.toFixed(1);
 
@@ -426,6 +481,7 @@
     wpmDisplay.textContent = wpm.toFixed(1);
     accuracyDisplay.textContent = accuracy.toFixed(1) + "%";
 
+    // Only update high score if accuracy is decent
     if (wpm > highWPM && accuracy >= 80) {
       highWPM = wpm;
       localStorage.setItem("typingArenaHighWPM", String(highWPM));
@@ -472,6 +528,37 @@
   function newParagraph() {
     resetTest();
     pickParagraph();
+  }
+
+  // Music control: starts on first interaction, toggle via label
+  function tryStartMusic() {
+    if (!bgMusic) return;
+    if (!musicEnabled) {
+      bgMusic.volume = 0.3;
+      bgMusic.play().catch(() => {});
+      musicEnabled = true;
+    }
+  }
+
+  document.addEventListener("click", () => {
+    tryStartMusic();
+  }, { once: true });
+
+  if (musicToggle) {
+    musicToggle.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (!bgMusic) return;
+      if (bgMusic.paused) {
+        bgMusic.volume = 0.3;
+        bgMusic.play().catch(() => {});
+        musicEnabled = true;
+        musicToggle.textContent = "Lo-fi playing. Click to mute.";
+      } else {
+        bgMusic.pause();
+        musicEnabled = false;
+        musicToggle.textContent = "Lo-fi muted. Click to play.";
+      }
+    });
   }
 
   typingInput.addEventListener("input", () => {
