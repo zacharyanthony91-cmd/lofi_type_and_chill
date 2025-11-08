@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lo-Fi Typing Challenge</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #0f172a;
+      color: #e5e7eb;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 960px;
+      padding: 24px 16px 40px;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      font-size: 26px;
+      margin: 0 0 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #38bdf8;
+    }
+
+    /* MEDIA PLAYER */
+
+    .player {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.96);
+      border: 1px solid rgba(148,163,253,0.24);
+      box-shadow: 0 14px 40px rgba(15,23,42,0.9);
+      margin-bottom: 18px;
+      backdrop-filter: blur(14px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .player-cover {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: radial-gradient(circle at 20% 0, #38bdf8, transparent),
+                  radial-gradient(circle at 80% 100%, #a855f7, transparent),
+                  #0f172a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: #e5e7eb;
+    }
+
+    .player-meta {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .player-title {
+      font-size: 11px;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+
+    .player-track {
+      font-size: 13px;
+      color: #e5e7eb;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .player-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      background: #38bdf8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+    }
+
+    .player-btn span {
+      display: block;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 7px 0 7px 11px;
+      border-color: transparent transparent transparent #0f172a;
+      margin-left: 2px;
+    }
+
+    .player-btn.pause span {
+      width: 11px;
+      height: 11px;
+      border: none;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .player-btn.pause span::before,
+    .player-btn.pause span::after {
+      content: "";
+      display: block;
+      width: 3px;
+      height: 11px;
+      background: #0f172a;
+      border-radius: 1px;
+    }
+
+    .player-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(56,189,248,0.35);
+    }
+
+    .player-next {
+      font-size: 9px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,253,0.5);
+      background: transparent;
+      color: #9ca3af;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+
+    .player-next:hover {
+      color: #e5e7eb;
+      border-color: #38bdf8;
+    }
+
+    .player-status {
+      font-size: 9px;
+      color: #6b7280;
+      min-width: 52px;
+      text-align: right;
+    }
+
+    /* MAIN LAYOUT */
+
+    .layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 18px;
+      align-items: flex-start;
+    }
+
+    @media (max-width: 800px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* TYPING GAME */
+
+    .game-box {
+      background: rgba(15,23,42,0.98);
+      border-radius: 18px;
+      padding: 16px 14px 16px;
+      border: 1px solid rgba(75,85,99,0.9);
+      box-shadow: 0 16px 36px rgba(15,23,42,0.9);
+    }
+
+    .label {
+      font-size: 11px;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      margin-bottom: 4px;
+    }
+
+    #promptText {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #d1d5db;
+      background: rgba(15,23,42,1);
+      padding: 9px 9px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(55,65,81,1);
+      margin-bottom: 8px;
+      min-height: 64px;
+    }
+
+    .typing-input {
+      width: 100%;
+      padding: 9px 9px;
+      font-size: 14px;
+      border-radius: 12px;
+      border: 1px solid #4b5563;
+      background: #020817;
+      color: #e5e7eb;
+      outline: none;
+      margin-bottom: 8px;
+      box-sizing: border-box;
+    }
+
+    .typing-input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 1px rgba(56,189,248,0.25);
+    }
+
+    .game-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 6px 12px;
+      font-size: 11px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      background: #38bdf8;
+      color: #020817;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      transition: all 0.12s ease;
+    }
+
+    .btn.secondary {
+      background: transparent;
+      color: #9ca3af;
+      border: 1px solid #4b5563;
+      font-weight: 500;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(56,189,248,0.35);
+    }
+
+    .btn.secondary:hover {
+      box-shadow: 0 4px 14px rgba(75,85,99,0.6);
+      color: #e5e7eb;
+    }
+
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .stats span strong {
+      color: #38bdf8;
+      font-weight: 600;
+    }
+
+    /* LEADERBOARD */
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .panel {
+      background: rgba(10,16,30,0.98);
+      border-radius: 18px;
+      padding: 10px 10px 10px;
+      border: 1px solid rgba(55,65,81,1);
+      box-shadow: 0 16px 32px rgba(15,23,42,0.95);
+    }
+
+    .panel h2 {
+      margin: 0 0 6px;
+      font-size: 14px;
+      color: #e5e7eb;
+    }
+
+    .panel small {
+      font-size: 9px;
+      color: #6b7280;
+    }
+
+    #leaderboardList {
+      list-style: none;
+      padding: 0;
+      margin: 6px 0 0;
+      font-size: 11px;
+      color: #9ca3af;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    #leaderboardList li {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 6px;
+      border-radius: 9px;
+      background: rgba(9,9,15,0.96);
+      border: 1px solid rgba(31,41,55,0.9);
+      margin-bottom: 4px;
+    }
+
+    #leaderboardList li span.name {
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+
+    #leaderboardList li span.score {
+      color: #38bdf8;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+
+    /* AD SPACE */
+
+    #ad-space {
+      margin-top: 4px;
+      padding: 6px;
+      border-radius: 10px;
+      border: 1px dashed rgba(75,85,99,0.9);
+      font-size: 9px;
+      color: #6b7280;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Lo-Fi Typing Challenge</h1>
+
+  <!-- MEDIA PLAYER -->
+  <div class="player">
+    <div class="player-cover">
+      <div>LO-FI</div>
+    </div>
+    <div class="player-meta">
+      <div class="player-title">Chill Lo-Fi Mix</div>
+      <div class="player-track" id="trackName">Click play to start the mix</div>
+    </div>
+    <button class="player-btn" id="playPauseBtn">
+      <span></span>
+    </button>
+    <button class="player-next" id="nextTrackBtn">Next</button>
+    <div class="player-status" id="playerStatus">Stopped</div>
+    <audio id="bgAudio" preload="auto"></audio>
+  </div>
+
+  <div class="layout">
+    <!-- TYPING GAME -->
+    <div class="game-box">
+      <div class="label">Prompt</div>
+      <div id="promptText"></div>
+
+      <input
+        id="typingInput"
+        class="typing-input"
+        autocomplete="off"
+        placeholder="Start typing here when you’re ready..."
+      />
+
+      <div class="game-controls">
+        <button class="btn" id="startBtn">Start Round</button>
+        <button class="btn secondary" id="resetBtn">Reset</button>
+        <span style="font-size:10px;color:#6b7280;">Round length: 60 seconds</span>
+      </div>
+
+      <div class="stats">
+        <span>Time: <strong id="timeLeft">60</strong>s</span>
+        <span>WPM: <strong id="wpm">0</strong></span>
+        <span>Accuracy: <strong id="accuracy">100%</strong></span>
+        <span>Best (this browser): <strong id="bestScore">0 WPM</strong></span>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="panel">
+        <h2>High Score Board</h2>
+        <small>Top scores stored in this browser. Hook a backend later to sync globally.</small>
+        <ul id="leaderboardList"></ul>
+      </div>
+
+      <div class="panel">
+        <h2>Ad Slot</h2>
+        <small>Drop your ad code here when you feel allergic to free time.</small>
+        <div id="ad-space">
+          Placeholder ad space.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /**************
+   * LO-FI PLAYER
+   **************/
+  const audioFiles = [
+    "lofi1.mp3",
+    "lofi2.mp3",
+    "lofi3.mp3",
+    "lofi4.mp3",
+    "lofi5.mp3"
+  ];
+
+  const trackLabels = [
+    "Midnight Keys",
+    "Soft Static Rain",
+    "Neon Coffee Shop",
+    "Sleepless Skyline",
+    "Cloud Drift Tape"
+  ];
+
+  const bgAudio = document.getElementById("bgAudio");
+  const playPauseBtn = document.getElementById("playPauseBtn");
+  const nextTrackBtn = document.getElementById("nextTrackBtn");
+  const trackNameEl = document.getElementById("trackName");
+  const playerStatusEl = document.getElementById("playerStatus");
+
+  let currentTrackIndex = -1;
+  let isPlaying = false;
+
+  function pickRandomTrack(excludeIndex) {
+    if (audioFiles.length === 1) return 0;
+    let idx;
+    do {
+      idx = Math.floor(Math.random() * audioFiles.length);
+    } while (idx === excludeIndex);
+    return idx;
+  }
+
+  function loadTrack(index) {
+    currentTrackIndex = index;
+    const file = audioFiles[index];
+    bgAudio.src = file;
+    trackNameEl.textContent = trackLabels[index] || file;
+    console.log("Loaded track:", bgAudio.src);
+  }
+
+  async function playTrack() {
+    try {
+      if (currentTrackIndex === -1) {
+        loadTrack(pickRandomTrack(-1));
+      }
+      await bgAudio.play();
+      isPlaying = true;
+      playPauseBtn.classList.add("pause");
+      playerStatusEl.textContent = "Playing";
+    } catch (e) {
+      playerStatusEl.textContent = "Click play to start audio";
+      console.error("Playback blocked or failed:", e);
+    }
+  }
+
+  function pauseTrack() {
+    bgAudio.pause();
+    isPlaying = false;
+    playPauseBtn.classList.remove("pause");
+    playerStatusEl.textContent = "Paused";
+  }
+
+  playPauseBtn.addEventListener("click", () => {
+    if (!isPlaying) {
+      playTrack();
+    } else {
+      pauseTrack();
+    }
+  });
+
+  nextTrackBtn.addEventListener("click", async () => {
+    const nextIndex = pickRandomTrack(currentTrackIndex);
+    loadTrack(nextIndex);
+    if (isPlaying) {
+      await playTrack();
+    }
+  });
+
+  bgAudio.addEventListener("ended", () => {
+    const nextIndex = pickRandomTrack(currentTrackIndex);
+    loadTrack(nextIndex);
+    playTrack();
+  });
+
+  bgAudio.addEventListener("error", () => {
+    console.error("Audio load error. Tried to load:", bgAudio.src);
+    playerStatusEl.textContent = "Audio error";
+  });
+
+  /****************
+   * TYPING PROMPTS
+   ****************/
+  const prompts = [
+    "I keep my focus sharp while the lo fi drums tap in the background, zoning into the keys like it is second nature and the whole room fades out.",
+    "The rhythm in my headphones keeps me calm while my fingers race across the keyboard, matching the kick and snare like they rehearsed it.",
+    "Neon glow on the desk, soft static in my ears, and a paragraph daring me to miss a single letter while the timer ticks down.",
+    "I treat every line like a rep in the gym, smooth form, full range, no wasted motion, just clean execution stacked on top of yesterday.",
+    "Late night silence, slow piano loops, and the soft hum of the screen turning practice into something that feels strangely cinematic.",
+    "Steady hands and slower breathing while the beat loops forever, reminding me that discipline is just focus stretched out over time.",
+    "The track flips but the concentration does not, and every correct word feels like another quiet win nobody can take away.",
+    "Calm mind, loud goals, fingers floating over the keys like I already know I am not stopping at average.",
+    "I watch the cursor blink like a heartbeat, counting down chances to fumble, and choose not to.",
+    "The world scrolls on its phone while I train my hands to move faster than excuses.",
+    "Coffee half cold, track on repeat, and I am still here refining the same simple skill until it looks unfair.",
+    "Typos try to slip in but I catch them in real time, like dodging tiny glitches in the simulation.",
+    "The beat is dusty, the bass quiet, the focus surgical, the goal simple: type cleaner than my doubts talk.",
+    "I do not need motivation quotes when the progress bar is right in front of me in letters per minute.",
+    "Soft chords loop while I carve sentences into shape, proving consistency hits harder than random bursts of effort.",
+    "I miss a key, correct it without flinching, and keep going, because perfection is a direction, not a requirement.",
+    "Keys clicking in sync with the hi hats, like the keyboard decided to be an instrument too.",
+    "I do not chase speed first; I chase accuracy until speed has no choice but to follow.",
+    "The lo fi crackle feels like white noise armor against every distraction trying to pull me out of the zone.",
+    "Screen glow on my hands, quiet room, stubborn focus; this is what actual leveling up looks like.",
+    "I scroll past the chaos, hit play on a mellow loop, and type like I am clocking in to my own future.",
+    "Every round is a clean slate: no one cares what I typed last time, only how sharp I am right now.",
+    "I let my posture reset, shoulders down, wrists light, turning this into a habit my body recognizes.",
+    "The timer is not a threat; it is a spotlight, and I use it to expose every lazy keystroke.",
+    "I keep my breathing slow while the paragraph runs long, proving I can stay precise under pressure.",
+    "The beat swings low, the melody drifts, and my hands stay locked into the sequence like muscle memory training itself.",
+    "I am turning boring practice into something that feels illegal to skip.",
+    "The small details add up: one more clean line, one more accurate word, one more reason I am not like everyone who quits.",
+    "I let the sound wrap the room and use it as a tunnel straight into full attention.",
+    "Nothing flashy, nothing viral, just me, a loop, a keyboard, and the quiet decision to get good at something."
+  ];
+
+  const typingInput = document.getElementById("typingInput");
+  const promptText = document.getElementById("promptText");
+  const startBtn = document.getElementById("startBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const timeLeftEl = document.getElementById("timeLeft");
+  const wpmEl = document.getElementById("wpm");
+  const accuracyEl = document.getElementById("accuracy");
+  const bestScoreEl = document.getElementById("bestScore");
+
+  let currentPrompt = "";
+  let timer = null;
+  let timeLeft = 60;
+  let started = false;
+
+  function pickPrompt() {
+    const idx = Math.floor(Math.random() * prompts.length);
+    currentPrompt = prompts[idx];
+    promptText.textContent = currentPrompt;
+  }
+
+  function resetGame() {
+    clearInterval(timer);
+    timer = null;
+    timeLeft = 60;
+    started = false;
+    timeLeftEl.textContent = "60";
+    wpmEl.textContent = "0";
+    accuracyEl.textContent = "100%";
+    typingInput.value = "";
+    typingInput.disabled = false;
+    pickPrompt();
+  }
+
+  function calculateStats() {
+    const typed = typingInput.value;
+    const elapsed = 60 - timeLeft;
+    const minutes = elapsed > 0 ? elapsed / 60 : 1 / 60;
+
+    let correctChars = 0;
+    const len = Math.min(typed.length, currentPrompt.length);
+    for (let i = 0; i < len; i++) {
+      if (typed[i] === currentPrompt[i]) correctChars++;
+    }
+
+    const accuracy =
+      typed.length === 0
+        ? 100
+        : Math.max(0, Math.round((correctChars / typed.length) * 100));
+
+    const words = typed.trim().length === 0
+      ? 0
+      : typed.trim().split(/\s+/).length;
+
+    const wpm = Math.max(0, Math.round(words / minutes));
+
+    return { wpm, accuracy };
+  }
+
+  function endGame() {
+    clearInterval(timer);
+    timer = null;
+    started = false;
+    typingInput.disabled = true;
+
+    const { wpm, accuracy } = calculateStats();
+    wpmEl.textContent = String(wpm);
+    accuracyEl.textContent = accuracy + "%";
+
+    handleLeaderboard(wpm);
+    updateBestScoreDisplay();
+  }
+
+  startBtn.addEventListener("click", () => {
+    if (started) return;
+    resetGame();
+    started = true;
+    typingInput.focus();
+
+    timer = setInterval(() => {
+      timeLeft--;
+      timeLeftEl.textContent = String(timeLeft);
+      const { wpm, accuracy } = calculateStats();
+      wpmEl.textContent = String(wpm);
+      accuracyEl.textContent = accuracy + "%";
+
+      if (timeLeft <= 0) {
+        endGame();
+      }
+    }, 1000);
+  });
+
+  resetBtn.addEventListener("click", () => {
+    resetGame();
+  });
+
+  pickPrompt();
+
+  /****************
+   * LEADERBOARD
+   ****************/
+  const LEADERBOARD_KEY = "lofi_typing_leaderboard_v1";
+  const MAX_ENTRIES = 10;
+  const leaderboardList = document.getElementById("leaderboardList");
+
+  function loadLeaderboard() {
+    try {
+      const raw = localStorage.getItem(LEADERBOARD_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .filter(e => typeof e.name === "string" && typeof e.score === "number")
+        .sort((a, b) => b.score - a.score)
+        .slice(0, MAX_ENTRIES);
+    } catch (e) {
+      console.error("Failed to load leaderboard:", e);
+      return [];
+    }
+  }
+
+  function saveLeaderboard(entries) {
+    try {
+      localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(entries));
+    } catch (e) {
+      console.error("Failed to save leaderboard:", e);
+    }
+  }
+
+  function renderLeaderboard() {
+    const entries = loadLeaderboard();
+    leaderboardList.innerHTML = "";
+    if (entries.length === 0) {
+      const li = document.createElement("li");
+      li.textContent = "No scores yet. Be the first problem.";
+      leaderboardList.appendChild(li);
+      return;
+    }
+
+    entries.forEach((entry, index) => {
+      const li = document.createElement("li");
+      const place = index + 1;
+
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "name";
+      nameSpan.textContent = place + ". " + entry.name;
+
+      const scoreSpan = document.createElement("span");
+      scoreSpan.className = "score";
+      scoreSpan.textContent = entry.score + " WPM";
+
+      li.appendChild(nameSpan);
+      li.appendChild(scoreSpan);
+      leaderboardList.appendChild(li);
+    });
+  }
+
+  function handleLeaderboard(score) {
+    if (!Number.isFinite(score) || score <= 0) return;
+
+    const entries = loadLeaderboard();
+    const lowest = entries.length < MAX_ENTRIES
+      ? 0
+      : entries[entries.length - 1].score;
+
+    if (score > lowest) {
+      const name = prompt("New high score! Enter a name to post on the board:");
+      const cleanName = (name || "Anonymous").trim().slice(0, 20);
+      if (cleanName) {
+        entries.push({ name: cleanName, score });
+        const sorted = entries
+          .sort((a, b) => b.score - a.score)
+          .slice(0, MAX_ENTRIES);
+        saveLeaderboard(sorted);
+        renderLeaderboard();
+      }
+    }
+  }
+
+  function updateBestScoreDisplay() {
+    const entries = loadLeaderboard();
+    if (entries.length === 0) {
+      bestScoreEl.textContent = "0 WPM";
+      return;
+    }
+    const best = entries[0].score;
+    bestScoreEl.textContent = best + " WPM";
+  }
+
+  renderLeaderboard();
+  updateBestScoreDisplay();
+</script>
+</body>
+</html>
